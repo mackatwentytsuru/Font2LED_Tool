@@ -62,6 +62,12 @@ class Font2LEDApp:
         self.temp_font_dir = None  # 一時フォントディレクトリ
         self.temp_font_paths = {}  # 一時フォントパスの辞書
         
+        # アニメーション状態変数
+        self.animation_running = False
+        self.animation_paused = False
+        self.animation_start_time = 0
+        self.animation_pause_time = 0
+        
         # LEDスクリーンサイズの設定
         self.screen_configs = {
             "10×65 (標準)": {"rows": 10, "cols": 65, "spacing": 30, "drone_spacing_m": 2.0},
@@ -120,11 +126,69 @@ class Font2LEDApp:
         font_combo.grid(row=2, column=1, columnspan=2, padx=5, pady=2)
         font_combo.bind("<<ComboboxSelected>>", self.on_font_change)
         
+        # アニメーション設定セクション
+        anim_frame = ttk.LabelFrame(left_frame, text="アニメーション設定", padding="5")
+        anim_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=5)
+        
+        # アニメーション有効チェック
+        self.animation_enabled = tk.BooleanVar(value=False)
+        anim_check = ttk.Checkbutton(anim_frame, text="アニメーション有効", 
+                                   variable=self.animation_enabled,
+                                   command=self.toggle_animation)
+        anim_check.grid(row=0, column=0, columnspan=3, sticky=tk.W)
+        
+        # アニメーション方向
+        ttk.Label(anim_frame, text="方向:").grid(row=1, column=0, sticky=tk.W)
+        self.animation_direction = tk.StringVar(value="右→左")
+        direction_combo = ttk.Combobox(anim_frame, textvariable=self.animation_direction,
+                                     values=["右→左", "左→右", "上→下", "下→上"],
+                                     state="readonly", width=10)
+        direction_combo.grid(row=1, column=1, padx=5)
+        
+        # アニメーション速度
+        ttk.Label(anim_frame, text="速度(秒):").grid(row=2, column=0, sticky=tk.W)
+        self.animation_duration = tk.DoubleVar(value=3.0)
+        duration_spinbox = ttk.Spinbox(anim_frame, from_=1.0, to=30.0, increment=0.5,
+                                     textvariable=self.animation_duration, width=8)
+        duration_spinbox.grid(row=2, column=1, padx=5)
+        
+        # プレビュー制御
+        preview_control_frame = ttk.Frame(anim_frame)
+        preview_control_frame.grid(row=3, column=0, columnspan=3, pady=5)
+        
+        self.play_button = ttk.Button(preview_control_frame, text="▶", command=self.play_animation, width=3)
+        self.play_button.pack(side=tk.LEFT, padx=2)
+        
+        self.pause_button = ttk.Button(preview_control_frame, text="⏸", command=self.pause_animation, width=3, state='disabled')
+        self.pause_button.pack(side=tk.LEFT, padx=2)
+        
+        self.stop_button = ttk.Button(preview_control_frame, text="⏹", command=self.stop_animation, width=3, state='disabled')
+        self.stop_button.pack(side=tk.LEFT, padx=2)
+        
+        # 進行度スライダー
+        progress_frame = ttk.Frame(anim_frame)
+        progress_frame.grid(row=4, column=0, columnspan=3, pady=5, sticky=(tk.W, tk.E))
+        
+        ttk.Label(progress_frame, text="進行:").pack(side=tk.LEFT)
+        
+        self.animation_progress = tk.DoubleVar(value=0.0)
+        self.progress_scale = ttk.Scale(progress_frame, from_=0.0, to=1.0, 
+                                       variable=self.animation_progress,
+                                       orient=tk.HORIZONTAL, length=200,
+                                       command=self.on_progress_change)
+        self.progress_scale.pack(side=tk.LEFT, padx=5)
+        
+        # アニメーション時間表示
+        self.progress_label = ttk.Label(progress_frame, text="0.0s / 3.0s")
+        self.progress_label.pack(side=tk.LEFT, padx=5)
+        self.animation_time = 0.0
+        self.animation_timer = None
+        
         # プレビュー生成ボタン
-        ttk.Button(left_frame, text="プレビュー生成", command=self.generate_preview).grid(row=3, column=0, columnspan=3, pady=10)
+        ttk.Button(left_frame, text="プレビュー生成", command=self.generate_preview).grid(row=4, column=0, columnspan=3, pady=10)
         
         # フレームリスト
-        ttk.Label(left_frame, text="フレームリスト:").grid(row=4, column=0, sticky=tk.W, pady=(10, 0))
+        ttk.Label(left_frame, text="フレームリスト:").grid(row=5, column=0, sticky=tk.W, pady=(10, 0))
         
         # リストボックスとスクロールバー
         list_frame = ttk.Frame(left_frame)
@@ -270,6 +334,7 @@ class Font2LEDApp:
         ttk.Button(button_frame, text="JSONエクスポート", command=self.export_json).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Skybrushスクリプトエクスポート", command=self.export_skybrush_script).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Custom Expressionエクスポート", command=self.export_custom_expression).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="アニメーションエクスポート", command=self.export_animation).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="画像プレビュー保存", command=self.save_preview_images).pack(side=tk.LEFT, padx=5)
         
         # ステータスバー
@@ -475,91 +540,14 @@ class Font2LEDApp:
             return
             
         self.current_led_data = self.text_to_led_matrix(text)
-        self.update_preview()
-        self.status_var.set(f"プレビュー生成完了: {self.current_led_data['width']}×10ピクセル")
+        self.update_preview_canvas(self.current_led_data)
+        self.status_var.set(f"プレビュー生成完了: {self.current_led_data['width']}×{self.current_led_data['height']}ピクセル")
         
-    def update_preview(self):
-        """プレビュー表示を更新（選択されたスクリーンサイズに基づく）"""
-        if not self.current_led_data:
-            return
-            
-        spacing = int(self.spacing_var.get() * self.zoom_scale)
-        # LEDサイズをcmからピクセルに変換（表示用）
-        # 20cm → 20ピクセルの比率で計算
-        led_size = int((self.led_size_cm_var.get() / 20.0) * 20 * self.zoom_scale)
-        
-        # 選択されたスクリーンサイズを使用
-        config = self.screen_configs[self.screen_size_var.get()]
-        rows = config["rows"]
-        cols = config["cols"]
-        canvas_width = cols * spacing
-        canvas_height = rows * spacing
-        
-        # キャンバスのスクロール領域を設定
-        self.canvas.config(scrollregion=(0, 0, canvas_width, canvas_height))
-        
-        # キャンバスをクリア
-        self.canvas.delete("all")
-        
-        # すべてのLED位置を描画（消灯状態）
-        for row in range(rows):
-            for col in range(cols):
-                center_x = col * spacing + spacing // 2
-                center_y = row * spacing + spacing // 2
-                
-                # LED球体（消灯時は暗いグレー）
-                x1 = center_x - led_size // 2
-                y1 = center_y - led_size // 2
-                x2 = center_x + led_size // 2
-                y2 = center_y + led_size // 2
-                
-                self.canvas.create_oval(x1, y1, x2, y2, fill="#101010", outline="#303030", width=1)
-        
-        # 点灯するLEDを描画
-        led_data = self.current_led_data
-        x_offset = (cols - led_data["width"]) // 2  # 水平方向のセンタリング
-        y_offset = (rows - led_data["height"]) // 2  # 垂直方向のセンタリング
-        
-        # RGB(0.0-1.0)から16進数カラーコードに変換
-        hex_color = "#{:02x}{:02x}{:02x}".format(
-            int(self.current_color[0] * 255),
-            int(self.current_color[1] * 255),
-            int(self.current_color[2] * 255)
-        )
-        
-        # 明るい色（エミッション効果）
-        bright_hex = "#{:02x}{:02x}{:02x}".format(
-            min(255, int(self.current_color[0] * 255 * 1.3)),
-            min(255, int(self.current_color[1] * 255 * 1.3)),
-            min(255, int(self.current_color[2] * 255 * 1.3))
-        )
-        
-        for x, y in led_data["pixels"]:
-            led_x = x + x_offset
-            led_y = y + y_offset
-            if 0 <= led_x < cols and 0 <= led_y < rows:
-                center_x = led_x * spacing + spacing // 2
-                center_y = led_y * spacing + spacing // 2
-                
-                # LED球体（点灯時）
-                x1 = center_x - led_size // 2
-                y1 = center_y - led_size // 2
-                x2 = center_x + led_size // 2
-                y2 = center_y + led_size // 2
-                
-                # グロー効果（外側の輪）
-                glow_size = led_size + 4
-                gx1 = center_x - glow_size // 2
-                gy1 = center_y - glow_size // 2
-                gx2 = center_x + glow_size // 2
-                gy2 = center_y + glow_size // 2
-                
-                self.canvas.create_oval(gx1, gy1, gx2, gy2, fill="", outline=hex_color, width=2)
-                self.canvas.create_oval(x1, y1, x2, y2, fill=bright_hex, outline=hex_color, width=2)
                 
     def update_canvas_size(self):
         """キャンバスサイズを更新"""
-        self.update_preview()
+        if self.current_led_data:
+            self.update_preview_canvas(self.current_led_data)
         
     def fit_to_window(self):
         """ウィンドウサイズに合わせて全体表示"""
@@ -587,19 +575,22 @@ class Font2LEDApp:
         self.zoom_scale = min(scale_x, scale_y, 1.0)  # 最大でも100%
         
         # プレビューを更新
-        self.update_preview()
+        if self.current_led_data:
+            self.update_preview_canvas(self.current_led_data)
         
     def reset_zoom(self):
         """ズームを100%にリセット"""
         self.zoom_scale = 1.0
         self.zoom_percent_var.set(100)
-        self.update_preview()
+        if self.current_led_data:
+            self.update_preview_canvas(self.current_led_data)
         
     def apply_zoom_percent(self):
         """入力されたパーセンテージでズームを適用"""
         percent = self.zoom_percent_var.get()
         self.zoom_scale = percent / 100.0
-        self.update_preview()
+        if self.current_led_data:
+            self.update_preview_canvas(self.current_led_data)
         
     def update_screen_size(self):
         """スクリーンサイズの変更を反映"""
@@ -1089,8 +1080,385 @@ Font2LED Toolの設定とBlenderの実際のドローン配置が一致してい
         except Exception as e:
             messagebox.showerror("エラー", f"ファイル保存エラー: {e}")
 
+    def toggle_animation(self):
+        """アニメーション有効/無効の切り替え"""
+        if self.animation_enabled.get():
+            self.status_var.set("アニメーション有効化")
+        else:
+            self.stop_animation()
+            self.status_var.set("アニメーション無効化")
+    
+    def play_animation(self):
+        """アニメーション再生開始"""
+        if not self.current_led_data:
+            messagebox.showwarning("警告", "プレビューを生成してからアニメーションを再生してください")
+            return
+            
+        if not self.animation_enabled.get():
+            messagebox.showwarning("警告", "アニメーション有効にチェックを入れてください")
+            return
+        
+        self.animation_running = True
+        self.animation_paused = False
+        import time
+        self.animation_start_time = time.time() * 1000  # より安定した時間取得
+        self.play_button.config(state='disabled')
+        self.pause_button.config(state='normal')
+        self.stop_button.config(state='normal')
+        
+        self.animate_frame()
+        self.status_var.set("アニメーション再生中...")
+    
+    def pause_animation(self):
+        """アニメーション一時停止"""
+        if self.animation_running and not self.animation_paused:
+            self.animation_paused = True
+            import time
+            self.animation_pause_time = time.time() * 1000
+            self.play_button.config(state='normal', text="▶")
+            self.pause_button.config(state='disabled')
+            self.status_var.set("アニメーション一時停止")
+        elif self.animation_paused:
+            # 再開
+            import time
+            pause_duration = time.time() * 1000 - self.animation_pause_time
+            self.animation_start_time += pause_duration
+            self.animation_paused = False
+            self.play_button.config(state='disabled')
+            self.pause_button.config(state='normal')
+            self.animate_frame()
+            self.status_var.set("アニメーション再開")
+    
+    def stop_animation(self):
+        """アニメーション停止"""
+        self.animation_running = False
+        self.animation_paused = False
+        self.animation_progress.set(0.0)
+        self.play_button.config(state='normal', text="▶")
+        self.pause_button.config(state='disabled')
+        self.stop_button.config(state='disabled')
+        
+        # 初期フレームに戻す
+        if self.current_led_data:
+            self.update_preview_canvas(self.current_led_data, 0.0)
+        
+        duration = self.animation_duration.get()
+        self.progress_label.config(text=f"0.0s / {duration:.1f}s")
+        self.status_var.set("アニメーション停止")
+    
+    def animate_frame(self):
+        """アニメーションフレームの更新"""
+        if not self.animation_running or self.animation_paused:
+            return
+        
+        import time
+        current_time = time.time() * 1000
+        elapsed_time = (current_time - self.animation_start_time) / 1000.0
+        duration = self.animation_duration.get()
+        
+        if elapsed_time >= duration:
+            # アニメーション完了
+            self.stop_animation()
+            return
+        
+        # 進行度計算（0.0-1.0）
+        time_fraction = elapsed_time / duration
+        self.animation_progress.set(time_fraction)
+        self.progress_label.config(text=f"{elapsed_time:.1f}s / {duration:.1f}s")
+        
+        
+        # アニメーションフレームをプレビューに反映
+        self.update_preview_canvas(self.current_led_data, time_fraction)
+        
+        # 次のフレームをスケジュール（30fps）
+        self.root.after(33, self.animate_frame)
+    
+    def on_progress_change(self, event=None):
+        """進行度スライダーの変更"""
+        if self.animation_running and not self.animation_paused:
+            return  # 再生中は手動変更を無視
+        
+        if self.current_led_data:
+            time_fraction = self.animation_progress.get()
+            duration = self.animation_duration.get()
+            current_time = time_fraction * duration
+            self.progress_label.config(text=f"{current_time:.1f}s / {duration:.1f}s")
+            self.update_preview_canvas(self.current_led_data, time_fraction)
+    
+    def update_preview_canvas(self, led_data, time_fraction=0.0):
+        """プレビューキャンバスを更新（アニメーション対応）"""
+        config = self.screen_configs[self.screen_size_var.get()]
+        
+        # ズーム対応のスペーシング計算
+        spacing = int(config["spacing"] * self.zoom_scale)
+        canvas_width = config["cols"] * spacing
+        canvas_height = config["rows"] * spacing
+        
+        # キャンバスのスクロール領域を設定
+        self.canvas.config(scrollregion=(0, 0, canvas_width, canvas_height))
+        
+        # キャンバスをクリア
+        self.canvas.delete("all")
+        
+        
+        # すべてのLED位置を描画（消灯状態）
+        led_size = max(4, int(spacing // 4))
+        for row in range(config["rows"]):
+            for col in range(config["cols"]):
+                center_x = col * spacing + spacing // 2
+                center_y = row * spacing + spacing // 2
+                
+                # LED球体（消灯時は暗いグレー）
+                x1 = center_x - led_size // 2
+                y1 = center_y - led_size // 2
+                x2 = center_x + led_size // 2
+                y2 = center_y + led_size // 2
+                
+                self.canvas.create_oval(x1, y1, x2, y2, fill="#202020", outline="#404040", width=1)
+        
+        # LEDドット描画（アニメーション適用）
+        if self.animation_enabled.get() and time_fraction > 0:
+            animated_pixels = self.calculate_animated_pixels(led_data, time_fraction)
+        else:
+            animated_pixels = led_data["pixels"]
+        
+        # 中央配置のオフセット計算
+        x_offset = (config["cols"] - led_data["width"]) // 2
+        y_offset = (config["rows"] - led_data["height"]) // 2
+        
+        # RGB(0.0-1.0)から16進数カラーコードに変換
+        color = self.current_color
+        hex_color = f"#{int(color[0]*255):02x}{int(color[1]*255):02x}{int(color[2]*255):02x}"
+        
+        # 明るい色（エミッション効果）
+        bright_hex = f"#{min(255, int(color[0]*255*1.3)):02x}{min(255, int(color[1]*255*1.3)):02x}{min(255, int(color[2]*255*1.3)):02x}"
+        
+        for x, y in animated_pixels:
+            led_x = x + x_offset
+            led_y = y + y_offset
+            
+            if 0 <= led_x < config["cols"] and 0 <= led_y < config["rows"]:
+                center_x = led_x * spacing + spacing // 2
+                center_y = led_y * spacing + spacing // 2
+                
+                # LED球体（点灯時）
+                x1 = center_x - led_size // 2
+                y1 = center_y - led_size // 2
+                x2 = center_x + led_size // 2
+                y2 = center_y + led_size // 2
+                
+                # グロー効果（外側の輪）
+                glow_size = led_size + 4
+                gx1 = center_x - glow_size // 2
+                gy1 = center_y - glow_size // 2
+                gx2 = center_x + glow_size // 2
+                gy2 = center_y + glow_size // 2
+                
+                self.canvas.create_oval(gx1, gy1, gx2, gy2, fill="", outline=hex_color, width=2)
+                self.canvas.create_oval(x1, y1, x2, y2, fill=bright_hex, outline=hex_color, width=2)
+    
+    def calculate_animated_pixels(self, led_data, time_fraction):
+        """アニメーション適用後のピクセル座標を計算"""
+        direction = self.animation_direction.get()
+        original_pixels = led_data["pixels"]
+        config = self.screen_configs[self.screen_size_var.get()]
+        
+        animated_pixels = []
+        
+        if direction == "右→左":
+            # 右から左へのスクロール
+            scroll_distance = config["cols"] + led_data["width"] + 10  # 余裕を持たせる
+            # time_fraction = 0: 右端外側、time_fraction = 1: 左端外側
+            offset_x = int(scroll_distance * (1 - time_fraction)) - led_data["width"] - 5
+            
+            for x, y in original_pixels:
+                new_x = x + offset_x
+                if -20 <= new_x < config["cols"] + 20:  # 広い範囲で表示
+                    animated_pixels.append((new_x, y))
+                    
+        elif direction == "左→右":
+            # 左から右へのスクロール
+            scroll_distance = config["cols"] + led_data["width"] + 10
+            # time_fraction = 0: 左端外側、time_fraction = 1: 右端外側
+            offset_x = int(scroll_distance * time_fraction) - led_data["width"] - 5
+            
+            for x, y in original_pixels:
+                new_x = x + offset_x
+                if -20 <= new_x < config["cols"] + 20:
+                    animated_pixels.append((new_x, y))
+                    
+        elif direction == "上→下":
+            # 上から下へのスクロール
+            scroll_distance = config["rows"] + led_data["height"] + 5
+            offset_y = int(scroll_distance * time_fraction) - led_data["height"] - 3
+            
+            for x, y in original_pixels:
+                new_y = y + offset_y
+                if -10 <= new_y < config["rows"] + 10:
+                    animated_pixels.append((x, new_y))
+                    
+        elif direction == "下→上":
+            # 下から上へのスクロール
+            scroll_distance = config["rows"] + led_data["height"] + 5
+            offset_y = int(scroll_distance * (1 - time_fraction)) - led_data["height"] - 3
+            
+            for x, y in original_pixels:
+                new_y = y + offset_y
+                if -10 <= new_y < config["rows"] + 10:
+                    animated_pixels.append((x, new_y))
+        return animated_pixels
+    
+    def export_animation(self):
+        """アニメーション付きCustom Expressionをエクスポート"""
+        if not self.current_led_data:
+            messagebox.showwarning("警告", "プレビューを生成してからエクスポートしてください")
+            return
+        
+        if not self.animation_enabled.get():
+            messagebox.showwarning("警告", "アニメーション有効にしてからエクスポートしてください")
+            return
+        
+        # ファイル名の生成
+        text = self.text_var.get() or "animation"
+        direction_map = {"右→左": "scroll_right_to_left", "左→右": "scroll_left_to_right", 
+                        "上→下": "scroll_top_to_bottom", "下→上": "scroll_bottom_to_top"}
+        direction_name = direction_map.get(self.animation_direction.get(), "scroll")
+        default_filename = f"animated_{text}_{direction_name}"
+        
+        filename = filedialog.asksaveasfilename(
+            initialfile=default_filename,
+            defaultextension=".py",
+            filetypes=[("Python files", "*.py"), ("All files", "*.*")]
+        )
+        
+        if not filename:
+            return
+        
+        # アニメーション用テンプレートを生成
+        config = self.screen_configs[self.screen_size_var.get()]
+        direction = self.animation_direction.get()
+        duration = self.animation_duration.get()
+        
+        # ピクセルデータをタプル形式に変換
+        pixels_str = "{\n"
+        for i, (x, y) in enumerate(self.current_led_data["pixels"]):
+            if i > 0 and i % 8 == 0:
+                pixels_str += "\n"
+            pixels_str += f"({x},{y}), "
+        pixels_str = pixels_str.rstrip(", ") + "\n}"
+        
+        script_content = f'''# Skybrush Custom Expression Function - アニメーション版
+# Generated by Font2LED Tool - Animation Export
+# Text: {self.text_var.get()} ({direction}、{duration}秒)
+
+# グリッドサイズ設定
+GRID_WIDTH = {config["cols"]}
+GRID_HEIGHT = {config["rows"]}
+
+# 座標範囲（ドローン配置設定に基づく動的計算）
+# グリッド: {config["cols"]}列×{config["rows"]}行、間隔: {config["drone_spacing_m"]}m
+DRONE_SPACING = {config["drone_spacing_m"]}  # ドローン間隔(m)
+X_MIN = -(GRID_WIDTH - 1) * DRONE_SPACING / 2
+X_MAX = (GRID_WIDTH - 1) * DRONE_SPACING / 2
+Z_MIN = -(GRID_HEIGHT - 1) * DRONE_SPACING / 2
+Z_MAX = (GRID_HEIGHT - 1) * DRONE_SPACING / 2
+
+# アニメーション設定
+ANIMATION_DURATION = {duration}  # {duration}秒でアニメーション
+ANIMATION_DIRECTION = "{direction}"
+
+# ピクセルデータ（Grid座標）- Font2LED Tool出力
+PIXELS = {pixels_str}
+
+def animated_{text.replace(' ', '_')}_{direction_name}(frame, time_fraction, drone_index, formation_index, position, drone_count):
+    """
+    {direction}アニメーション - "{self.text_var.get()}"
+    
+    Args:
+        frame: フレーム番号
+        time_fraction: 時間進行度（0.0-1.0）
+        drone_index: ドローンインデックス
+        formation_index: フォーメーションインデックス
+        position: ドローンの3D座標 (x, y, z)
+        drone_count: ドローン総数
+    
+    Returns:
+        float: Color Ramp用のインデックス値（0.0-1.0）
+    """
+    
+    # ドローンの現在位置を取得
+    x_pos = position[0]  # X座標
+    z_pos = position[2]  # Z座標（高さ）
+    
+    # 座標をグリッドインデックスに変換
+    if X_MAX > X_MIN and Z_MAX > Z_MIN:
+        # X軸: グリッド列 (0-{config["cols"]-1})
+        grid_x = int(round((x_pos - X_MIN) / (X_MAX - X_MIN) * (GRID_WIDTH - 1)))
+        
+        # Z軸: グリッド行 (0-{config["rows"]-1})、上下反転
+        grid_z = int(round((z_pos - Z_MIN) / (Z_MAX - Z_MIN) * (GRID_HEIGHT - 1)))
+        grid_z = {config["rows"]-1} - grid_z  # 上下反転
+        
+        # アニメーション計算: {direction}
+        {self._generate_animation_logic(direction, config)}
+        
+        # 範囲チェック
+        if 0 <= grid_x < GRID_WIDTH and 0 <= grid_z < GRID_HEIGHT:
+            # アニメーション適用：元のピクセル座標をオフセット分調整
+            for pixel_x, pixel_z in PIXELS:
+                # ピクセルのアニメーション後の座標
+                animated_pixel_x = pixel_x + animated_x_offset
+                animated_pixel_z = pixel_z + animated_z_offset
+                
+                # 現在のドローン位置と一致するかチェック
+                if (abs(animated_pixel_x - grid_x) < 0.5 and 
+                    abs(animated_pixel_z - grid_z) < 0.5):
+                    return 1.0  # 文字部分（Color Rampで色に変換）
+        
+        return 0.0  # 背景（黒）
+    else:
+        return 0.0  # エラー時（黒）
+'''
+        
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(script_content)
+            
+            self.status_var.set(f"アニメーションエクスポート完了: {os.path.basename(filename)}")
+            messagebox.showinfo("エクスポート完了", 
+                              f"アニメーション付きCustom Expressionをエクスポートしました:\\n{filename}")
+            
+        except Exception as e:
+            messagebox.showerror("エラー", f"ファイル保存エラー: {e}")
+    
+    def _generate_animation_logic(self, direction, config):
+        """アニメーションロジックのコード生成"""
+        if direction == "右→左":
+            return f'''        # 右から左へのスクロール
+        scroll_distance = GRID_WIDTH + {self.current_led_data["width"]}
+        animated_x_offset = int(scroll_distance * (1 - time_fraction)) - {self.current_led_data["width"]}
+        animated_z_offset = 0'''
+        elif direction == "左→右":
+            return f'''        # 左から右へのスクロール
+        scroll_distance = GRID_WIDTH + {self.current_led_data["width"]}
+        animated_x_offset = int(scroll_distance * time_fraction) - {self.current_led_data["width"]}
+        animated_z_offset = 0'''
+        elif direction == "上→下":
+            return f'''        # 上から下へのスクロール
+        scroll_distance = GRID_HEIGHT + {self.current_led_data["height"]}
+        animated_z_offset = int(scroll_distance * time_fraction) - {self.current_led_data["height"]}
+        animated_x_offset = 0'''
+        elif direction == "下→上":
+            return f'''        # 下から上へのスクロール
+        scroll_distance = GRID_HEIGHT + {self.current_led_data["height"]}
+        animated_z_offset = int(scroll_distance * (1 - time_fraction)) - {self.current_led_data["height"]}
+        animated_x_offset = 0'''
+
     def on_closing(self):
         """アプリケーション終了時のクリーンアップ"""
+        # アニメーション停止
+        self.stop_animation()
+        
         try:
             # 一時フォントディレクトリのクリーンアップ
             if self.temp_font_dir and os.path.exists(self.temp_font_dir):
