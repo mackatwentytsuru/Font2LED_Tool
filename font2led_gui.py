@@ -15,6 +15,7 @@ import shutil
 import tempfile
 from datetime import datetime
 from typing import List, Dict, Tuple
+from pixelmap_parser import PixelMapParser
 
 class Font2LEDApp:
     def __init__(self, root):
@@ -222,8 +223,12 @@ class Font2LEDApp:
         self.animation_time = 0.0
         self.animation_timer = None
         
-        # プレビュー生成ボタン
-        ttk.Button(left_frame, text="プレビュー生成", command=self.generate_preview).grid(row=4, column=0, columnspan=3, pady=10)
+        # プレビュー生成ボタンとインポートボタン
+        button_frame = ttk.Frame(left_frame)
+        button_frame.grid(row=4, column=0, columnspan=3, pady=10)
+        
+        ttk.Button(button_frame, text="プレビュー生成", command=self.generate_preview).pack(side=tk.LEFT, padx=2)
+        ttk.Button(button_frame, text="ピクセルマップインポート", command=self.import_pixelmap).pack(side=tk.LEFT, padx=2)
         
         # フレームリスト
         ttk.Label(left_frame, text="フレームリスト:").grid(row=5, column=0, sticky=tk.W, pady=(10, 0))
@@ -516,6 +521,11 @@ class Font2LEDApp:
         if self.current_led_data:
             self.generate_preview()
             
+    def update_color_display(self):
+        """色表示を更新"""
+        hex_color = f"#{int(self.current_color[0]*255):02x}{int(self.current_color[1]*255):02x}{int(self.current_color[2]*255):02x}"
+        self.color_frame.config(bg=hex_color)
+    
     def choose_color(self):
         """色選択ダイアログ"""
         # 現在の色をRGB(0-255)に変換
@@ -1024,14 +1034,15 @@ for area in bpy.context.screen.areas:
         self.update_preview_if_exists()
     
     def remove_row_top(self):
-        """上から1行削除 - テキストを上にシフト"""
+        """上から1行削除 - 上の行を削除（テキストは相対的に下にシフト）"""
         current = self.custom_rows_var.get()
         if current > 1:
             self.custom_rows_var.set(current - 1)
-            # テキストを1行分上にシフト（ただし負の値にはならない）
-            self.y_offset_adjustment = max(0, self.y_offset_adjustment - 1)
+            # 上の行を削除するため、テキストは相対的に1行分下にシフトする
+            # （表示位置を維持するためにy_offsetを増やす）
+            self.y_offset_adjustment += 1
             print(f"上から1行削除: {current} → {current - 1} (y_offset: {self.y_offset_adjustment})")
-            self.status_var.set(f"上から1行削除: {current - 1}行 (テキスト上シフト)")
+            self.status_var.set(f"上から1行削除: {current - 1}行")
             self.update_preview_if_exists()
     
     def remove_row_bottom(self):
@@ -1569,19 +1580,44 @@ Font2LED Toolの設定とBlenderの実際のドローン配置が一致してい
         # 行数が足りない場合は下が切れるように、上から配置 + y_offset調整を適用
         y_offset = 0 + self.y_offset_adjustment
         
-        # RGB(0.0-1.0)から16進数カラーコードに変換
-        color = self.current_color
-        hex_color = f"#{int(color[0]*255):02x}{int(color[1]*255):02x}{int(color[2]*255):02x}"
+        # カラーマップの取得
+        color_map = led_data.get('color_map', {})
         
-        # 明るい色（エミッション効果）
-        bright_hex = f"#{min(255, int(color[0]*255*1.3)):02x}{min(255, int(color[1]*255*1.3)):02x}{min(255, int(color[2]*255*1.3)):02x}"
-        
-        for x, y in animated_pixels:
+        # ピクセルごとに描画
+        for i, pixel_data in enumerate(animated_pixels):
+            # 座標を取得
+            if isinstance(pixel_data, (list, tuple)):
+                x, y = pixel_data[0], pixel_data[1]
+            else:
+                continue
+            
             led_x = x + x_offset
             led_y = y + y_offset
             
             if 0 <= led_x < config["cols"] and 0 <= led_y < config["rows"]:
                 center_x = led_x * spacing + spacing // 2
+                
+                # 色を決定
+                if color_map and i < len(led_data['pixels']) and len(led_data['pixels'][i]) > 2:
+                    # カラーマップから色を取得
+                    color_id = str(led_data['pixels'][i][2])
+                    if color_id in color_map:
+                        color_rgb = color_map[color_id]
+                        if isinstance(color_rgb, (list, tuple)) and len(color_rgb) >= 3:
+                            color = (color_rgb[0], color_rgb[1], color_rgb[2])
+                        else:
+                            color = self.current_color
+                    else:
+                        color = self.current_color
+                else:
+                    # デフォルトカラー
+                    color = self.current_color
+                
+                # RGB(0.0-1.0)から16進数カラーコードに変換
+                hex_color = f"#{int(color[0]*255):02x}{int(color[1]*255):02x}{int(color[2]*255):02x}"
+                
+                # 明るい色（エミッション効果）
+                bright_hex = f"#{min(255, int(color[0]*255*1.3)):02x}{min(255, int(color[1]*255*1.3)):02x}{min(255, int(color[2]*255*1.3)):02x}"
                 center_y = led_y * spacing + spacing // 2
                 
                 # LED球体（点灯時）
@@ -1809,6 +1845,88 @@ def animated_{text.replace(' ', '_')}_{direction_name}(frame, time_fraction, dro
         animated_z_offset = int(scroll_distance * (1 - time_fraction)) - {self.current_led_data["height"]}
         animated_x_offset = 0'''
 
+    def import_pixelmap(self):
+        """ピクセルマップファイルをインポート"""
+        filename = filedialog.askopenfilename(
+            title="ピクセルマップファイルを選択",
+            filetypes=[
+                ("対応ファイル", "*.html;*.htm;*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.txt;*.json"),
+                ("HTMLファイル", "*.html;*.htm"),
+                ("画像ファイル", "*.png;*.jpg;*.jpeg;*.gif;*.bmp"),
+                ("テキストファイル", "*.txt"),
+                ("JSONファイル", "*.json"),
+                ("すべてのファイル", "*.*")
+            ]
+        )
+        
+        if not filename:
+            return
+        
+        try:
+            # パーサーを使用してファイルを解析
+            parser = PixelMapParser()
+            pixelmap_data = parser.parse_file(filename)
+            
+            # インポートしたデータをLED形式に変換
+            led_data = self._pixelmap_to_led_data(pixelmap_data)
+            
+            # 現在のLEDデータとして設定
+            self.current_led_data = led_data
+            
+            # テキスト入力欄を更新
+            self.text_var.set(f"Import: {os.path.basename(filename)}")
+            
+            # 色が1つだけの場合は現在の色として設定
+            if len(pixelmap_data.get('colors', {})) == 1:
+                color_values = list(pixelmap_data['colors'].values())
+                if color_values:
+                    self.current_color = color_values[0]
+                    self.update_color_display()
+            
+            # プレビューを更新
+            self.update_preview_canvas(led_data)
+            
+            # ステータス更新
+            self.status_var.set(f"ピクセルマップインポート完了: {os.path.basename(filename)} ({led_data['width']}x{led_data['height']})")
+            
+            # 複数色の場合は情報を表示
+            if len(pixelmap_data.get('colors', {})) > 1:
+                color_info = f"インポートされた色数: {len(pixelmap_data['colors'])}色\n"
+                for color_id, rgb in pixelmap_data['colors'].items():
+                    color_info += f"  色{color_id}: RGB({rgb[0]:.2f}, {rgb[1]:.2f}, {rgb[2]:.2f})\n"
+                messagebox.showinfo("色情報", color_info)
+                
+        except Exception as e:
+            messagebox.showerror("インポートエラー", f"ファイルのインポートに失敗しました:\n{str(e)}")
+    
+    def _pixelmap_to_led_data(self, pixelmap_data):
+        """ピクセルマップデータをLED形式に変換"""
+        width = pixelmap_data['width']
+        height = pixelmap_data['height']
+        
+        # Font2LED形式のLEDデータを作成
+        led_data = {
+            'width': width,
+            'height': height,
+            'pixels': []
+        }
+        
+        # ピクセルデータを変換
+        if isinstance(pixelmap_data['pixels'], list) and len(pixelmap_data['pixels']) > 0:
+            if isinstance(pixelmap_data['pixels'][0], dict):
+                # 辞書形式の場合（カラー情報付き）
+                led_data['color_map'] = pixelmap_data.get('colors', {})
+                for pixel in pixelmap_data['pixels']:
+                    led_data['pixels'].append((pixel['x'], pixel['y'], pixel.get('color_id', 1)))
+            else:
+                # タプル形式の場合（座標のみ）
+                for pixel in pixelmap_data['pixels']:
+                    if isinstance(pixel, (list, tuple)) and len(pixel) >= 2:
+                        led_data['pixels'].append((pixel[0], pixel[1]))
+        
+        return led_data
+    
+    
     def on_closing(self):
         """アプリケーション終了時のクリーンアップ"""
         # アニメーション停止
