@@ -25,34 +25,308 @@ class Font2LEDApp:
         # ピクセルフォント設定
         base_dir = os.path.dirname(os.path.abspath(__file__))
         self.font_configs = {
-            "JF-Dot-k12x10 (推奨)": {
-                "path": r"C:\Users\macka\Downloads\JF-Dot-k12x10\JF-Dot-k12x10.ttf",
-                "size": (12, 10),
-                "description": "日本語対応12x10ピクセルフォント"
-            },
-            "k8x12 (8×12ピクセル)": {
-                "path": os.path.join(base_dir, "k8x12_ttf_2021-05-05", "k8x12.ttf"),
-                "size": (16, 16),
-                "description": "8×12ピクセル日本語フォント（96ドット、650ドローン対応）"
-            },
-            "k8x12L (8×12細字)": {
-                "path": os.path.join(base_dir, "k8x12_ttf_2021-05-05", "k8x12L.ttf"),
-                "size": (16, 16),
-                "description": "8×12ピクセル細字（96ドット、650ドローン対応）"
-            },
-            "k8x12S (8×12太字)": {
-                "path": os.path.join(base_dir, "k8x12_ttf_2021-05-05", "k8x12S.ttf"),
-                "size": (16, 16),
-                "description": "8×12ピクセル太字（96ドット、650ドローン対応）"
-            },
-            "マルミーニャ (12×12ピクセル)": {
-                "path": os.path.join(base_dir, "x12y12pxMaruMinya_2023-07-14", "x12y12pxMaruMinya.ttf"),
+            "gn12bitmap (Bitmap★)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/gn12bitmap.ttf"),
                 "size": (12, 12),
-                "description": "12×12ピクセル丸ゴシック（144ドット、かわいいデザイン）"
+                "description": "True bitmap font optimized for LED display"
             },
-            # 他のピクセルフォントをここに追加可能
+            "MS明朝 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/MSMINCHO.TTF"),
+                "size": (12, 12),
+                "description": "Microsoft Mincho bitmap font"
+            },
+            "MSPゴシック (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/MSPRGOT.TTF"),
+                "size": (12, 12),
+                "description": "Microsoft Gothic bitmap font"
+            },
+            "ヒラギノ角ゴ Pro (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/HiraKakuPro-W3.otf"),
+                "size": (12, 12),
+                "description": "Hiragino Kaku Gothic Pro bitmap"
+            },
+            "ヒラギノ明朝 Pro (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/HiraMinPro-W3.otf"),
+                "size": (12, 12),
+                "description": "Hiragino Mincho Pro bitmap"
+            },
+            "みかちゃん (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/mikachanALL.ttc"),
+                "size": (12, 12),
+                "description": "Mikachan All bitmap font"
+            },
+            "aqua_pfont (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/aqua_pfont.ttf"),
+                "size": (12, 12),
+                "description": "Aqua P Font bitmap"
+            },
+            "DSdaigo3_0 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSdaigo3_0.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSdaigo3_0.ttc"
+            },
+            "DSdaigo5_0 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSdaigo5_0.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSdaigo5_0.ttc"
+            },
+            "DSdaigo7_0 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSdaigo7_0.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSdaigo7_0.ttc"
+            },
+            "DSdaigo9_0 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSdaigo9_0.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSdaigo9_0.ttc"
+            },
+            "DShirgy4 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirgy4.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirgy4.ttc"
+            },
+            "DShirgy8 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirgy8.ttc"),
+                "size": (8, 8),
+                "description": "True bitmap font - DShirgy8.ttc"
+            },
+            "DShirkg2 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg2.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirkg2.ttc"
+            },
+            "DShirkg3 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg3.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirkg3.ttc"
+            },
+            "DShirkg4 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg4.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirkg4.ttc"
+            },
+            "DShirkg5 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg5.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirkg5.ttc"
+            },
+            "DShirkg6 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg6.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirkg6.ttc"
+            },
+            "DShirkg7 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg7.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirkg7.ttc"
+            },
+            "DShirkg8 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg8.ttc"),
+                "size": (8, 8),
+                "description": "True bitmap font - DShirkg8.ttc"
+            },
+            "DShirkg9 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg9.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirkg9.ttc"
+            },
+            "DShirmn2 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn2.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirmn2.ttc"
+            },
+            "DShirmn3 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn3.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirmn3.ttc"
+            },
+            "DShirmn4 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn4.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirmn4.ttc"
+            },
+            "DShirmn5 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn5.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirmn5.ttc"
+            },
+            "DShirmn6 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn6.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirmn6.ttc"
+            },
+            "DShirmn7 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn7.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DShirmn7.ttc"
+            },
+            "DShirmn8 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn8.ttc"),
+                "size": (8, 8),
+                "description": "True bitmap font - DShirmn8.ttc"
+            },
+            "DSkeage3 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSkeage3.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSkeage3.ttc"
+            },
+            "DSkeage5 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSkeage5.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSkeage5.ttc"
+            },
+            "DSkeage7 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSkeage7.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSkeage7.ttc"
+            },
+            "DSkeage9 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSkeage9.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSkeage9.ttc"
+            },
+            "DSoike3 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSoike3.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSoike3.ttc"
+            },
+            "DSoike5 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSoike5.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSoike5.ttc"
+            },
+            "DSoike7 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSoike7.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSoike7.ttc"
+            },
+            "DSoike9 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/DSoike9.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - DSoike9.ttc"
+            },
+            "FGCCARGL (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/FGCCARGL.TTC"),
+                "size": (12, 12),
+                "description": "True bitmap font - FGCCARGL.TTC"
+            },
+            "FGCCHGW3 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/FGCCHGW3.TTC"),
+                "size": (12, 12),
+                "description": "True bitmap font - FGCCHGW3.TTC"
+            },
+            "FGCCHGW5 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/FGCCHGW5.TTC"),
+                "size": (12, 12),
+                "description": "True bitmap font - FGCCHGW5.TTC"
+            },
+            "FGCCHMW3 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/FGCCHMW3.TTC"),
+                "size": (12, 12),
+                "description": "True bitmap font - FGCCHMW3.TTC"
+            },
+            "FGCCHMW5 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/FGCCHMW5.TTC"),
+                "size": (12, 12),
+                "description": "True bitmap font - FGCCHMW5.TTC"
+            },
+            "FGCNTKYM (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/FGCNTKYM.TTC"),
+                "size": (12, 12),
+                "description": "True bitmap font - FGCNTKYM.TTC"
+            },
+            "HiraKakuPro-W6 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/HiraKakuPro-W6.otf"),
+                "size": (12, 12),
+                "description": "True bitmap font - HiraKakuPro-W6.otf"
+            },
+            "HiraKakuStd-W8 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/HiraKakuStd-W8.otf"),
+                "size": (8, 8),
+                "description": "True bitmap font - HiraKakuStd-W8.otf"
+            },
+            "HiraMaruPro-W4 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/HiraMaruPro-W4.otf"),
+                "size": (12, 12),
+                "description": "True bitmap font - HiraMaruPro-W4.otf"
+            },
+            "HiraMinPro-W6 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/HiraMinPro-W6.otf"),
+                "size": (12, 12),
+                "description": "True bitmap font - HiraMinPro-W6.otf"
+            },
+            "Trya2kp (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Trya2kp.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Trya2kp.ttc"
+            },
+            "Trya3kp (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Trya3kp.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Trya3kp.ttc"
+            },
+            "Tryc2kp (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Tryc2kp.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Tryc2kp.ttc"
+            },
+            "Tryc3kp (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Tryc3kp.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Tryc3kp.ttc"
+            },
+            "Tryg3kp (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Tryg3kp.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Tryg3kp.ttc"
+            },
+            "Trygh (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Trygh.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Trygh.ttc"
+            },
+            "Trym2kp (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Trym2kp.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Trym2kp.ttc"
+            },
+            "Trym3kp (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Trym3kp.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Trym3kp.ttc"
+            },
+            "Trymh (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Trymh.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Trymh.ttc"
+            },
+            "Trymr2kp (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Trymr2kp.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Trymr2kp.ttc"
+            },
+            "Trymr3kp (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/Trymr3kp.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - Trymr3kp.ttc"
+            },
+            "dshirkg1 (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/dshirkg1.TTC"),
+                "size": (12, 12),
+                "description": "True bitmap font - dshirkg1.TTC"
+            },
+            "msgothic (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/msgothic.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - msgothic.ttc"
+            },
+            "msmincho (Bitmap)": {
+                "path": os.path.join(base_dir, "bitmap_fonts/msmincho.ttc"),
+                "size": (12, 12),
+                "description": "True bitmap font - msmincho.ttc"
+            },
         }
-        self.current_font = "JF-Dot-k12x10 (推奨)"
+        self.current_font = "gn12bitmap (Bitmap★)"
         self.font_path = self.font_configs[self.current_font]["path"]
         self.face = None
         self.current_led_data = None
