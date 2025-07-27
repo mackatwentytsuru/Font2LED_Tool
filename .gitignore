@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.tmp.*
+*.bak
+*.backup
+
+# Font2LED Tool specific
+書き出し/
+*.json
+*.png
+test_*.py
+debug_*.py
+fix_*.py
+verify_*.py
+quick_*.py
+simple_*.py
+
+# Studio files
+studio-blender-main/
+
+# Font files cache
+__pycache__/
