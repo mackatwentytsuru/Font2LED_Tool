@@ -229,6 +229,7 @@ class Font2LEDApp:
         
         ttk.Button(button_frame, text="プレビュー生成", command=self.generate_preview).pack(side=tk.LEFT, padx=2)
         ttk.Button(button_frame, text="ピクセルマップインポート", command=self.import_pixelmap).pack(side=tk.LEFT, padx=2)
+        ttk.Button(button_frame, text="手動編集をリセット", command=self.reset_manual_positions).pack(side=tk.LEFT, padx=2)
         
         # フレームリスト
         ttk.Label(left_frame, text="フレームリスト:").grid(row=5, column=0, sticky=tk.W, pady=(10, 0))
@@ -469,6 +470,16 @@ class Font2LEDApp:
         main_frame.grid_rowconfigure(0, weight=1)
         main_frame.grid_columnconfigure(1, weight=1)
         
+        # ドラッグ&ドロップ用の変数
+        self.dragging_pixel = None  # ドラッグ中のピクセル情報
+        self.drag_start_pos = None  # ドラッグ開始位置
+        self.manual_pixel_positions = {}  # 手動で移動したピクセルの位置
+        
+        # マウスイベントのバインド
+        self.canvas.bind("<Button-1>", self.on_canvas_click)
+        self.canvas.bind("<B1-Motion>", self.on_canvas_drag)
+        self.canvas.bind("<ButtonRelease-1>", self.on_canvas_release)
+        
     def load_font(self):
         """フォントを読み込み（Unicode パス問題を解決）"""
         try:
@@ -664,6 +675,9 @@ class Font2LEDApp:
         if not text:
             messagebox.showwarning("警告", "テキストを入力してください")
             return
+        
+        # 手動で移動したピクセル位置をクリア
+        self.manual_pixel_positions.clear()
             
         self.current_led_data = self.text_to_led_matrix(text)
         self.update_preview_canvas(self.current_led_data)
@@ -805,21 +819,30 @@ class Font2LEDApp:
             }
             
             led_data = frame["led_data"]
-            x_offset = (config["cols"] - led_data["width"]) // 2 + self.x_offset_adjustment  # 水平方向のセンタリング + x_offset調整
-            # 行数が足りない場合は下が切れるように、上から配置 + y_offset調整を適用
-            y_offset = 0 + self.y_offset_adjustment
             
-            for x, y in led_data["pixels"]:
-                led_x = x + x_offset
-                led_y = y + y_offset
-                if 0 <= led_x < config["cols"] and 0 <= led_y < config["rows"]:
-                    frame_data["pixels"].append({
-                        "x": led_x,
-                        "y": led_y,
-                        "r": frame["color"][0],
-                        "g": frame["color"][1],
-                        "b": frame["color"][2]
-                    })
+            # 手動移動を考慮した最終位置を取得
+            final_pixels = self.get_final_pixel_positions(led_data)
+            
+            for pixel in final_pixels:
+                pixel_data = {
+                    "x": pixel[0],
+                    "y": pixel[1],
+                    "r": frame["color"][0],
+                    "g": frame["color"][1],
+                    "b": frame["color"][2]
+                }
+                
+                # カラーマップがある場合は色を上書き
+                if led_data.get('color_map') and len(pixel) > 2:
+                    color_id = str(pixel[2])
+                    if color_id in led_data['color_map']:
+                        color_rgb = led_data['color_map'][color_id]
+                        if isinstance(color_rgb, (list, tuple)) and len(color_rgb) >= 3:
+                            pixel_data["r"] = color_rgb[0]
+                            pixel_data["g"] = color_rgb[1]
+                            pixel_data["b"] = color_rgb[2]
+                
+                frame_data["pixels"].append(pixel_data)
                     
             export_data["frames"].append(frame_data)
         
@@ -1591,8 +1614,12 @@ Font2LED Toolの設定とBlenderの実際のドローン配置が一致してい
             else:
                 continue
             
-            led_x = x + x_offset
-            led_y = y + y_offset
+            # 手動で移動したピクセルの位置を確認
+            if i in self.manual_pixel_positions:
+                led_x, led_y = self.manual_pixel_positions[i]
+            else:
+                led_x = x + x_offset
+                led_y = y + y_offset
             
             if 0 <= led_x < config["cols"] and 0 <= led_y < config["rows"]:
                 center_x = led_x * spacing + spacing // 2
@@ -1633,7 +1660,12 @@ Font2LED Toolの設定とBlenderの実際のドローン配置が一致してい
                 gx2 = center_x + glow_size // 2
                 gy2 = center_y + glow_size // 2
                 
-                self.canvas.create_oval(gx1, gy1, gx2, gy2, fill="", outline=hex_color, width=2)
+                # ドラッグ中のピクセルはハイライト表示
+                if self.dragging_pixel and self.dragging_pixel['index'] == i:
+                    self.canvas.create_oval(gx1-2, gy1-2, gx2+2, gy2+2, fill="", outline="yellow", width=3)
+                    self.canvas.create_oval(gx1, gy1, gx2, gy2, fill="", outline=hex_color, width=2)
+                else:
+                    self.canvas.create_oval(gx1, gy1, gx2, gy2, fill="", outline=hex_color, width=2)
                 self.canvas.create_oval(x1, y1, x2, y2, fill=bright_hex, outline=hex_color, width=2)
     
     def calculate_animated_pixels(self, led_data, time_fraction):
@@ -1941,6 +1973,150 @@ def animated_{text.replace(' ', '_')}_{direction_name}(frame, time_fraction, dro
             print(f"クリーンアップエラー: {e}")
         finally:
             self.root.destroy()
+    
+    def on_canvas_click(self, event):
+        """キャンバスクリックイベント"""
+        if not self.current_led_data:
+            return
+        
+        # スクロール位置を考慮した実際の座標
+        canvas_x = self.canvas.canvasx(event.x)
+        canvas_y = self.canvas.canvasy(event.y)
+        
+        # グリッド設定
+        config = {
+            "rows": self.custom_rows_var.get(),
+            "cols": self.custom_cols_var.get(),
+            "spacing": 30,
+            "drone_spacing_m": self.custom_drone_spacing_var.get()
+        }
+        spacing = int(config["spacing"] * self.zoom_scale)
+        
+        # クリック位置のグリッド座標を計算
+        grid_x = int(canvas_x // spacing)
+        grid_y = int(canvas_y // spacing)
+        
+        # 点灯しているピクセルか確認
+        x_offset = (config["cols"] - self.current_led_data["width"]) // 2 + self.x_offset_adjustment
+        y_offset = 0 + self.y_offset_adjustment
+        
+        # アニメーション中の位置も考慮
+        time_fraction = self.animation_progress.get() if self.animation_enabled.get() else 0.0
+        if self.animation_enabled.get() and time_fraction > 0:
+            animated_pixels = self.calculate_animated_pixels(self.current_led_data, time_fraction)
+        else:
+            animated_pixels = self.current_led_data["pixels"]
+        
+        # クリック位置に点灯ピクセルがあるか確認
+        for i, pixel_data in enumerate(animated_pixels):
+            if isinstance(pixel_data, (list, tuple)):
+                x, y = pixel_data[0], pixel_data[1]
+                
+                # 手動で移動したピクセルの位置を確認
+                if i in self.manual_pixel_positions:
+                    led_x, led_y = self.manual_pixel_positions[i]
+                else:
+                    led_x = x + x_offset
+                    led_y = y + y_offset
+                
+                if led_x == grid_x and led_y == grid_y:
+                    # このピクセルをドラッグ開始
+                    self.dragging_pixel = {
+                        'index': i,
+                        'original_x': x,
+                        'original_y': y,
+                        'current_grid_x': led_x,
+                        'current_grid_y': led_y
+                    }
+                    self.drag_start_pos = (canvas_x, canvas_y)
+                    break
+    
+    def on_canvas_drag(self, event):
+        """キャンバスドラッグイベント"""
+        if not self.dragging_pixel:
+            return
+        
+        # スクロール位置を考慮した実際の座標
+        canvas_x = self.canvas.canvasx(event.x)
+        canvas_y = self.canvas.canvasy(event.y)
+        
+        # グリッド設定
+        config = {
+            "rows": self.custom_rows_var.get(),
+            "cols": self.custom_cols_var.get(),
+            "spacing": 30,
+            "drone_spacing_m": self.custom_drone_spacing_var.get()
+        }
+        spacing = int(config["spacing"] * self.zoom_scale)
+        
+        # 新しいグリッド座標を計算
+        new_grid_x = int(canvas_x // spacing)
+        new_grid_y = int(canvas_y // spacing)
+        
+        # グリッド範囲内に制限
+        new_grid_x = max(0, min(config["cols"] - 1, new_grid_x))
+        new_grid_y = max(0, min(config["rows"] - 1, new_grid_y))
+        
+        # ピクセル位置を更新
+        if (new_grid_x != self.dragging_pixel['current_grid_x'] or 
+            new_grid_y != self.dragging_pixel['current_grid_y']):
+            self.dragging_pixel['current_grid_x'] = new_grid_x
+            self.dragging_pixel['current_grid_y'] = new_grid_y
+            
+            # 手動位置を記録
+            self.manual_pixel_positions[self.dragging_pixel['index']] = (new_grid_x, new_grid_y)
+            
+            # キャンバスを再描画
+            time_fraction = self.animation_progress.get() if self.animation_enabled.get() else 0.0
+            self.update_preview_canvas(self.current_led_data, time_fraction)
+    
+    def on_canvas_release(self, event):
+        """キャンバスマウスリリースイベント"""
+        if self.dragging_pixel:
+            self.status_var.set(f"ピクセルを移動しました: ({self.dragging_pixel['current_grid_x']}, {self.dragging_pixel['current_grid_y']})")
+        self.dragging_pixel = None
+        self.drag_start_pos = None
+    
+    def get_final_pixel_positions(self, led_data):
+        """手動移動を考慮した最終的なピクセル位置を取得"""
+        config = {
+            "cols": self.custom_cols_var.get(),
+            "rows": self.custom_rows_var.get()
+        }
+        
+        # オフセット計算
+        x_offset = (config["cols"] - led_data["width"]) // 2 + self.x_offset_adjustment
+        y_offset = 0 + self.y_offset_adjustment
+        
+        final_pixels = []
+        for i, pixel_data in enumerate(led_data["pixels"]):
+            if isinstance(pixel_data, (list, tuple)):
+                x, y = pixel_data[0], pixel_data[1]
+                
+                # 手動で移動した位置があればそれを使用
+                if i in self.manual_pixel_positions:
+                    led_x, led_y = self.manual_pixel_positions[i]
+                else:
+                    led_x = x + x_offset
+                    led_y = y + y_offset
+                
+                # グリッド範囲内のピクセルのみ追加
+                if 0 <= led_x < config["cols"] and 0 <= led_y < config["rows"]:
+                    # カラー情報も含める
+                    if len(pixel_data) > 2:
+                        final_pixels.append((led_x, led_y, pixel_data[2]))
+                    else:
+                        final_pixels.append((led_x, led_y))
+        
+        return final_pixels
+    
+    def reset_manual_positions(self):
+        """手動編集位置をリセット"""
+        self.manual_pixel_positions.clear()
+        if self.current_led_data:
+            time_fraction = self.animation_progress.get() if self.animation_enabled.get() else 0.0
+            self.update_preview_canvas(self.current_led_data, time_fraction)
+            self.status_var.set("手動編集位置をリセットしました")
 
 def main():
     root = tk.Tk()
