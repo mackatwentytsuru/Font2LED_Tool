@@ -1041,7 +1041,8 @@ for area in bpy.context.screen.areas:
         """上に1行追加 - テキストを下にシフトして上に空白行を追加"""
         current = self.custom_rows_var.get()
         self.custom_rows_var.set(current + 1)
-        # 上に行を追加する場合、y_offsetは変更しない（テキストの絶対位置は変わらない）
+        # 上に行を追加 = テキストを下にシフトさせる
+        self.y_offset_adjustment += 1
         print(f"上に1行追加: {current} → {current + 1} (y_offset: {self.y_offset_adjustment})")
         self.status_var.set(f"上に1行追加: {current + 1}行")
         self.update_preview_if_exists()
@@ -1060,8 +1061,7 @@ for area in bpy.context.screen.areas:
         current = self.custom_rows_var.get()
         if current > 1:
             self.custom_rows_var.set(current - 1)
-            # 上の行を削除するため、テキストは相対的に1行分上にシフトする
-            # （テキストを上に移動させるためy_offsetを減らす）
+            # 上の行を削除 = テキストを上にシフトさせる
             self.y_offset_adjustment = max(0, self.y_offset_adjustment - 1)
             print(f"上から1行削除: {current} → {current - 1} (y_offset: {self.y_offset_adjustment})")
             self.status_var.set(f"上から1行削除: {current - 1}行")
@@ -1090,8 +1090,19 @@ for area in bpy.context.screen.areas:
         
         current = self.custom_cols_var.get()
         
+        # 中央配置の変化を計算
+        if hasattr(self, 'current_led_data') and self.current_led_data:
+            text_width = self.current_led_data['width']
+            old_center = (current - text_width) // 2
+            new_center = (current + 1 - text_width) // 2
+            center_shift = new_center - old_center
+        else:
+            center_shift = 0
+        
         self.custom_cols_var.set(current + 1)
-        # 左に列を追加する場合、x_offsetは変更しない（テキストの絶対位置は変わらない）
+        # 左に列を追加 = テキストを右にシフトさせる
+        # ただし、中央配置の自動シフトを相殺する
+        self.x_offset_adjustment = self.x_offset_adjustment + 1 - center_shift
         
         print(f"左に1列追加: {current} → {current + 1} (x_offset: {self.x_offset_adjustment})")
         self.status_var.set(f"左に1列追加: {current + 1}列 (左側に空白追加)")
@@ -1105,8 +1116,18 @@ for area in bpy.context.screen.areas:
         
         current = self.custom_cols_var.get()
         
+        # 中央配置の変化を計算
+        if hasattr(self, 'current_led_data') and self.current_led_data:
+            text_width = self.current_led_data['width']
+            old_center = (current - text_width) // 2
+            new_center = (current + 1 - text_width) // 2
+            center_shift = new_center - old_center
+        else:
+            center_shift = 0
+        
         self.custom_cols_var.set(current + 1)
-        # 右に列を追加する場合、x_offsetは変更しない（テキスト位置は維持）
+        # 右に列を追加する場合、位置を維持するため中央配置の変化を相殺
+        self.x_offset_adjustment = self.x_offset_adjustment - center_shift
         
         print(f"右に1列追加: {current} → {current + 1} (x_offset: {self.x_offset_adjustment})")
         self.status_var.set(f"右に1列追加: {current + 1}列 (右側に空白追加)")
@@ -1116,21 +1137,40 @@ for area in bpy.context.screen.areas:
         """左から1列削除 - 左側の列を削除（テキストを左にシフト）"""
         current = self.custom_cols_var.get()
         if current > 1:
+            # 中央配置の変化を計算
+            if hasattr(self, 'current_led_data') and self.current_led_data:
+                text_width = self.current_led_data['width']
+                old_center = (current - text_width) // 2
+                new_center = (current - 1 - text_width) // 2
+                center_shift = new_center - old_center
+            else:
+                center_shift = 0
+                
             self.custom_cols_var.set(current - 1)
-            # 左の列を削除するため、テキストは相対的に1列分左にシフトする
-            # （テキストを左に移動させるためx_offsetを減らす）
-            self.x_offset_adjustment = max(0, self.x_offset_adjustment - 1)
+            # 左の列を削除 = テキストを左にシフトさせる
+            # ただし、中央配置の自動シフトを相殺する
+            self.x_offset_adjustment = self.x_offset_adjustment - 1 - center_shift
             
             print(f"左から1列削除: {current} → {current - 1} (x_offset: {self.x_offset_adjustment})")
             self.status_var.set(f"左から1列削除: {current - 1}列")
             self.update_preview_if_exists()
     
     def remove_col_right(self):
-        """右から1列削除 - 右側の空白を削除（テキスト位置は維持）"""
+        """右から1列削除 - 右側の列を削除（テキスト位置は維持）"""
         current = self.custom_cols_var.get()
         if current > 1:
+            # 中央配置の変化を計算
+            if hasattr(self, 'current_led_data') and self.current_led_data:
+                text_width = self.current_led_data['width']
+                old_center = (current - text_width) // 2
+                new_center = (current - 1 - text_width) // 2
+                center_shift = new_center - old_center
+            else:
+                center_shift = 0
+                
             self.custom_cols_var.set(current - 1)
-            # 右の列を削除する場合、x_offsetは変更しない（テキスト位置は維持）
+            # 右の列を削除する場合、位置を維持するため中央配置の変化を相殺
+            self.x_offset_adjustment = self.x_offset_adjustment - center_shift
             
             print(f"右から1列削除: {current} → {current - 1} (x_offset: {self.x_offset_adjustment})")
             self.status_var.set(f"右から1列削除: {current - 1}列 (右側から削除)")
