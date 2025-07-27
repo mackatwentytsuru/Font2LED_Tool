@@ -22,311 +22,60 @@ class Font2LEDApp:
         self.root.title("Font2LED Tool - JF-Dot-k12x10")
         self.root.geometry("900x700")
         
-        # ピクセルフォント設定
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+        # システムフォント設定（FreeType 100%互換）
         self.font_configs = {
-            "gn12bitmap (Bitmap★)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/gn12bitmap.ttf"),
+            "Consolas (推奨★)": {
+                "path": "C:/Windows/Fonts/consola.ttf",
                 "size": (12, 12),
-                "description": "True bitmap font optimized for LED display"
+                "description": "Japanese support - Optimal monospace for LED"
             },
-            "MS明朝 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/MSMINCHO.TTF"),
+            "Meiryo (日本語)": {
+                "path": "C:/Windows/Fonts/meiryo.ttc",
                 "size": (12, 12),
-                "description": "Microsoft Mincho bitmap font"
+                "description": "Japanese support"
             },
-            "MSPゴシック (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/MSPRGOT.TTF"),
+            "Arial": {
+                "path": "C:/Windows/Fonts/arial.ttf",
                 "size": (12, 12),
-                "description": "Microsoft Gothic bitmap font"
+                "description": "Japanese support"
             },
-            "ヒラギノ角ゴ Pro (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/HiraKakuPro-W3.otf"),
+            "Calibri": {
+                "path": "C:/Windows/Fonts/calibri.ttf",
                 "size": (12, 12),
-                "description": "Hiragino Kaku Gothic Pro bitmap"
+                "description": "Japanese support"
             },
-            "ヒラギノ明朝 Pro (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/HiraMinPro-W3.otf"),
+            "Courier New": {
+                "path": "C:/Windows/Fonts/courier.ttf",
                 "size": (12, 12),
-                "description": "Hiragino Mincho Pro bitmap"
+                "description": "Japanese support"
             },
-            "みかちゃん (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/mikachanALL.ttc"),
+            "Times New Roman": {
+                "path": "C:/Windows/Fonts/times.ttf",
                 "size": (12, 12),
-                "description": "Mikachan All bitmap font"
+                "description": "Japanese support"
             },
-            "aqua_pfont (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/aqua_pfont.ttf"),
+            "Verdana": {
+                "path": "C:/Windows/Fonts/verdana.ttf",
                 "size": (12, 12),
-                "description": "Aqua P Font bitmap"
+                "description": "Japanese support"
             },
-            "DSdaigo3_0 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSdaigo3_0.ttc"),
+            "MS Gothic (日本語)": {
+                "path": "C:/Windows/Fonts/msgothic.ttc",
                 "size": (12, 12),
-                "description": "True bitmap font - DSdaigo3_0.ttc"
+                "description": "Japanese support"
             },
-            "DSdaigo5_0 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSdaigo5_0.ttc"),
+            "MS Mincho (日本語)": {
+                "path": "C:/Windows/Fonts/msmincho.ttc",
                 "size": (12, 12),
-                "description": "True bitmap font - DSdaigo5_0.ttc"
+                "description": "Japanese support"
             },
-            "DSdaigo7_0 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSdaigo7_0.ttc"),
+            "Yu Gothic Medium (日本語)": {
+                "path": "C:/Windows/Fonts/YuGothM.ttc",
                 "size": (12, 12),
-                "description": "True bitmap font - DSdaigo7_0.ttc"
-            },
-            "DSdaigo9_0 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSdaigo9_0.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DSdaigo9_0.ttc"
-            },
-            "DShirgy4 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirgy4.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirgy4.ttc"
-            },
-            "DShirgy8 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirgy8.ttc"),
-                "size": (8, 8),
-                "description": "True bitmap font - DShirgy8.ttc"
-            },
-            "DShirkg2 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg2.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirkg2.ttc"
-            },
-            "DShirkg3 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg3.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirkg3.ttc"
-            },
-            "DShirkg4 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg4.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirkg4.ttc"
-            },
-            "DShirkg5 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg5.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirkg5.ttc"
-            },
-            "DShirkg6 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg6.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirkg6.ttc"
-            },
-            "DShirkg7 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg7.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirkg7.ttc"
-            },
-            "DShirkg8 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg8.ttc"),
-                "size": (8, 8),
-                "description": "True bitmap font - DShirkg8.ttc"
-            },
-            "DShirkg9 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirkg9.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirkg9.ttc"
-            },
-            "DShirmn2 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn2.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirmn2.ttc"
-            },
-            "DShirmn3 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn3.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirmn3.ttc"
-            },
-            "DShirmn4 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn4.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirmn4.ttc"
-            },
-            "DShirmn5 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn5.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirmn5.ttc"
-            },
-            "DShirmn6 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn6.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirmn6.ttc"
-            },
-            "DShirmn7 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn7.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DShirmn7.ttc"
-            },
-            "DShirmn8 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DShirmn8.ttc"),
-                "size": (8, 8),
-                "description": "True bitmap font - DShirmn8.ttc"
-            },
-            "DSkeage3 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSkeage3.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DSkeage3.ttc"
-            },
-            "DSkeage5 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSkeage5.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DSkeage5.ttc"
-            },
-            "DSkeage7 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSkeage7.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DSkeage7.ttc"
-            },
-            "DSkeage9 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSkeage9.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DSkeage9.ttc"
-            },
-            "DSoike3 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSoike3.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DSoike3.ttc"
-            },
-            "DSoike5 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSoike5.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DSoike5.ttc"
-            },
-            "DSoike7 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSoike7.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DSoike7.ttc"
-            },
-            "DSoike9 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/DSoike9.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - DSoike9.ttc"
-            },
-            "FGCCARGL (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/FGCCARGL.TTC"),
-                "size": (12, 12),
-                "description": "True bitmap font - FGCCARGL.TTC"
-            },
-            "FGCCHGW3 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/FGCCHGW3.TTC"),
-                "size": (12, 12),
-                "description": "True bitmap font - FGCCHGW3.TTC"
-            },
-            "FGCCHGW5 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/FGCCHGW5.TTC"),
-                "size": (12, 12),
-                "description": "True bitmap font - FGCCHGW5.TTC"
-            },
-            "FGCCHMW3 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/FGCCHMW3.TTC"),
-                "size": (12, 12),
-                "description": "True bitmap font - FGCCHMW3.TTC"
-            },
-            "FGCCHMW5 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/FGCCHMW5.TTC"),
-                "size": (12, 12),
-                "description": "True bitmap font - FGCCHMW5.TTC"
-            },
-            "FGCNTKYM (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/FGCNTKYM.TTC"),
-                "size": (12, 12),
-                "description": "True bitmap font - FGCNTKYM.TTC"
-            },
-            "HiraKakuPro-W6 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/HiraKakuPro-W6.otf"),
-                "size": (12, 12),
-                "description": "True bitmap font - HiraKakuPro-W6.otf"
-            },
-            "HiraKakuStd-W8 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/HiraKakuStd-W8.otf"),
-                "size": (8, 8),
-                "description": "True bitmap font - HiraKakuStd-W8.otf"
-            },
-            "HiraMaruPro-W4 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/HiraMaruPro-W4.otf"),
-                "size": (12, 12),
-                "description": "True bitmap font - HiraMaruPro-W4.otf"
-            },
-            "HiraMinPro-W6 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/HiraMinPro-W6.otf"),
-                "size": (12, 12),
-                "description": "True bitmap font - HiraMinPro-W6.otf"
-            },
-            "Trya2kp (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Trya2kp.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Trya2kp.ttc"
-            },
-            "Trya3kp (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Trya3kp.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Trya3kp.ttc"
-            },
-            "Tryc2kp (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Tryc2kp.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Tryc2kp.ttc"
-            },
-            "Tryc3kp (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Tryc3kp.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Tryc3kp.ttc"
-            },
-            "Tryg3kp (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Tryg3kp.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Tryg3kp.ttc"
-            },
-            "Trygh (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Trygh.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Trygh.ttc"
-            },
-            "Trym2kp (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Trym2kp.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Trym2kp.ttc"
-            },
-            "Trym3kp (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Trym3kp.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Trym3kp.ttc"
-            },
-            "Trymh (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Trymh.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Trymh.ttc"
-            },
-            "Trymr2kp (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Trymr2kp.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Trymr2kp.ttc"
-            },
-            "Trymr3kp (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/Trymr3kp.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - Trymr3kp.ttc"
-            },
-            "dshirkg1 (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/dshirkg1.TTC"),
-                "size": (12, 12),
-                "description": "True bitmap font - dshirkg1.TTC"
-            },
-            "msgothic (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/msgothic.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - msgothic.ttc"
-            },
-            "msmincho (Bitmap)": {
-                "path": os.path.join(base_dir, "bitmap_fonts/msmincho.ttc"),
-                "size": (12, 12),
-                "description": "True bitmap font - msmincho.ttc"
-            },
+                "description": "Japanese support"
+            }
         }
-        self.current_font = "gn12bitmap (Bitmap★)"
+        self.current_font = "Consolas (推奨★)"
         self.font_path = self.font_configs[self.current_font]["path"]
         self.face = None
         self.current_led_data = None
@@ -364,6 +113,13 @@ class Font2LEDApp:
         # フォント読み込み
         self.load_font()
         
+        # 行数・列数方向制御のためのoffset管理
+        self.y_offset_adjustment = 0  # 上下方向の位置調整値
+        self.x_offset_adjustment = 0  # 左右方向の位置調整値
+        
+        # ボタン操作のロック機構（同時押し防止）
+        self.button_operation_lock = False
+        
         # アプリケーション終了時のクリーンアップ
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
@@ -379,7 +135,7 @@ class Font2LEDApp:
         
         # テキスト入力
         ttk.Label(left_frame, text="テキスト:").grid(row=0, column=0, sticky=tk.W)
-        self.text_var = tk.StringVar(value="小津")
+        self.text_var = tk.StringVar(value="小津ちゃん")
         text_entry = ttk.Entry(left_frame, textvariable=self.text_var, width=30, font=("Arial", 12))
         text_entry.grid(row=0, column=1, padx=5, pady=2)
         
@@ -480,37 +236,115 @@ class Font2LEDApp:
         ttk.Button(left_frame, text="選択を削除", command=self.delete_frame).grid(row=6, column=2, pady=5)
         
         # スクリーンサイズ選択
-        screen_frame = ttk.LabelFrame(left_frame, text="LEDスクリーン設定", padding="5")
+        screen_frame = ttk.LabelFrame(left_frame, text="LEDスクリーン設定（拡張版）", padding="5")
         screen_frame.grid(row=7, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
         
+        # === 現在の設定表示エリア（常時表示） ===
+        info_frame = ttk.LabelFrame(screen_frame, text="現在の設定", padding="5")
+        info_frame.grid(row=0, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=(0, 10))
+        
+        # 行数・列数・総ピクセル数表示
+        self.screen_display_label = ttk.Label(info_frame, text="", font=("Arial", 11, "bold"))
+        self.screen_display_label.grid(row=0, column=0, columnspan=2, pady=2)
+        
+        self.total_pixels_label = ttk.Label(info_frame, text="", font=("Arial", 10))
+        self.total_pixels_label.grid(row=1, column=0, columnspan=2, pady=2)
+        
+        # プリセット選択（従来の機能）
+        preset_frame = ttk.LabelFrame(screen_frame, text="プリセット", padding="5")
+        preset_frame.grid(row=1, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=5)
+        
         self.screen_size_var = tk.StringVar(value=self.current_screen_config)
+        preset_row = 0
+        preset_col = 0
         for i, config_name in enumerate(self.screen_configs.keys()):
-            rb = ttk.Radiobutton(screen_frame, text=config_name, 
+            rb = ttk.Radiobutton(preset_frame, text=config_name, 
                                variable=self.screen_size_var, 
                                value=config_name,
                                command=self.update_screen_size)
-            rb.grid(row=i, column=0, sticky=tk.W, padx=5, pady=2)
+            rb.grid(row=preset_row, column=preset_col, sticky=tk.W, padx=5, pady=2)
+            preset_col += 1
+            if preset_col > 2:  # 3列で改行
+                preset_col = 0
+                preset_row += 1
         
-        # カスタム設定フレーム
-        custom_frame = ttk.Frame(screen_frame)
-        custom_frame.grid(row=len(self.screen_configs), column=0, columnspan=2, sticky=(tk.W, tk.E), padx=5, pady=5)
+        # === 行数調整エリア ===
+        rows_frame = ttk.LabelFrame(screen_frame, text="行数調整", padding="5")
+        rows_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), padx=(0, 5), pady=5)
         
-        # 行数と列数
-        ttk.Label(custom_frame, text="行数:").grid(row=0, column=0, sticky=tk.W)
+        # 現在の行数表示
+        ttk.Label(rows_frame, text="行数:").grid(row=0, column=0, sticky=tk.W)
         self.custom_rows_var = tk.IntVar(value=10)
-        ttk.Spinbox(custom_frame, from_=1, to=100, textvariable=self.custom_rows_var, width=8).grid(row=0, column=1, padx=2)
+        self.rows_display = ttk.Label(rows_frame, textvariable=self.custom_rows_var, font=("Arial", 12, "bold"))
+        self.rows_display.grid(row=0, column=1, padx=5)
+        
+        # 行数追加ボタン（上・下）
+        ttk.Button(rows_frame, text="▲上に追加", 
+                  command=self.add_row_top, width=10).grid(row=0, column=2, padx=2)
+        ttk.Button(rows_frame, text="▼下に追加", 
+                  command=self.add_row_bottom, width=10).grid(row=0, column=3, padx=2)
+        
+        # 行数削除ボタン
+        ttk.Button(rows_frame, text="上から削除", 
+                  command=self.remove_row_top, width=10).grid(row=1, column=2, padx=2, pady=2)
+        ttk.Button(rows_frame, text="下から削除", 
+                  command=self.remove_row_bottom, width=10).grid(row=1, column=3, padx=2, pady=2)
+        
+        # 位置リセットボタン
+        ttk.Button(rows_frame, text="位置リセット", 
+                  command=self.reset_position_adjustment, width=10).grid(row=2, column=2, columnspan=2, padx=2, pady=2)
+        
+        # === 列数調整エリア ===
+        cols_frame = ttk.LabelFrame(screen_frame, text="列数調整", padding="5")
+        cols_frame.grid(row=2, column=2, columnspan=2, sticky=(tk.W, tk.E), padx=(5, 0), pady=5)
+        
+        # 現在の列数表示
+        ttk.Label(cols_frame, text="列数:").grid(row=0, column=0, sticky=tk.W)
+        self.custom_cols_var = tk.IntVar(value=65)
+        self.cols_display = ttk.Label(cols_frame, textvariable=self.custom_cols_var, font=("Arial", 12, "bold"))
+        self.cols_display.grid(row=0, column=1, padx=5)
+        
+        # 列数追加ボタン（左・右）
+        ttk.Button(cols_frame, text="◀左に追加", 
+                  command=self.add_col_left, width=10).grid(row=0, column=2, padx=2)
+        ttk.Button(cols_frame, text="▶右に追加", 
+                  command=self.add_col_right, width=10).grid(row=0, column=3, padx=2)
+        
+        # 列数削除ボタン
+        ttk.Button(cols_frame, text="左から削除", 
+                  command=self.remove_col_left, width=10).grid(row=1, column=2, padx=2, pady=2)
+        ttk.Button(cols_frame, text="右から削除", 
+                  command=self.remove_col_right, width=10).grid(row=1, column=3, padx=2, pady=2)
+        
+        # === 直接入力・その他設定エリア ===
+        custom_frame = ttk.LabelFrame(screen_frame, text="詳細設定", padding="5")
+        custom_frame.grid(row=3, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=5)
+        
+        # 直接入力
+        ttk.Label(custom_frame, text="直接入力 - 行数:").grid(row=0, column=0, sticky=tk.W)
+        ttk.Spinbox(custom_frame, from_=1, to=100, textvariable=self.custom_rows_var, 
+                   width=8, command=self.update_screen_display).grid(row=0, column=1, padx=2)
         
         ttk.Label(custom_frame, text="列数:").grid(row=0, column=2, sticky=tk.W, padx=(10, 0))
-        self.custom_cols_var = tk.IntVar(value=65)
-        ttk.Spinbox(custom_frame, from_=1, to=200, textvariable=self.custom_cols_var, width=8).grid(row=0, column=3, padx=2)
+        ttk.Spinbox(custom_frame, from_=1, to=200, textvariable=self.custom_cols_var, 
+                   width=8, command=self.update_screen_display).grid(row=0, column=3, padx=2)
         
         # ドローン間隔
         ttk.Label(custom_frame, text="ドローン間隔:").grid(row=1, column=0, sticky=tk.W, pady=(5, 0))
         self.custom_drone_spacing_var = tk.DoubleVar(value=2.0)
-        ttk.Spinbox(custom_frame, from_=0.5, to=10.0, increment=0.1, textvariable=self.custom_drone_spacing_var, width=8).grid(row=1, column=1, padx=2, pady=(5, 0))
+        ttk.Spinbox(custom_frame, from_=0.5, to=10.0, increment=0.1, textvariable=self.custom_drone_spacing_var, 
+                   width=8, command=self.update_screen_display).grid(row=1, column=1, padx=2, pady=(5, 0))
         ttk.Label(custom_frame, text="メートル").grid(row=1, column=2, sticky=tk.W, pady=(5, 0))
         
-        ttk.Button(custom_frame, text="カスタム適用", command=self.apply_custom_settings).grid(row=1, column=3, padx=5, pady=(5, 0))
+        ttk.Button(custom_frame, text="設定適用", command=self.apply_custom_settings).grid(row=1, column=3, padx=5, pady=(5, 0))
+        
+        # 変数変更時の自動更新設定
+        self.custom_rows_var.trace_add('write', lambda *args: self.update_screen_display())
+        self.custom_cols_var.trace_add('write', lambda *args: self.update_screen_display())
+        self.custom_drone_spacing_var.trace_add('write', lambda *args: self.update_screen_display())
+        
+        # 初期表示更新
+        self.update_screen_display()
         
         # フォントサイズ設定
         font_size_frame = ttk.LabelFrame(left_frame, text="フォントサイズ設定", padding="5")
@@ -953,8 +787,9 @@ class Font2LEDApp:
             }
             
             led_data = frame["led_data"]
-            x_offset = (config["cols"] - led_data["width"]) // 2  # 水平方向のセンタリング
-            y_offset = (config["rows"] - led_data["height"]) // 2  # 垂直方向のセンタリング
+            x_offset = (config["cols"] - led_data["width"]) // 2 + self.x_offset_adjustment  # 水平方向のセンタリング + x_offset調整
+            # 行数が足りない場合は下が切れるように、上から配置 + y_offset調整を適用
+            y_offset = 0 + self.y_offset_adjustment
             
             for x, y in led_data["pixels"]:
                 led_x = x + x_offset
@@ -1113,21 +948,208 @@ def main(frame, time_fraction, drone_index, formation_index, position, drone_cou
             
         self.status_var.set(f"Skybrushスクリプトエクスポート完了: {filename}")
         
+    # === 新しい方向指定付き追加・削除メソッド ===
+    
+    def reset_position_adjustment(self):
+        """位置調整をリセット"""
+        self.y_offset_adjustment = 0
+        self.x_offset_adjustment = 0
+        print(f"位置調整をリセット: x_offset = {self.x_offset_adjustment}, y_offset = {self.y_offset_adjustment}")
+        self.status_var.set("位置調整をリセットしました")
+        self.update_preview_if_exists()
+    
+    def update_screen_display(self):
+        """画面表示情報の更新"""
+        rows = self.custom_rows_var.get()
+        cols = self.custom_cols_var.get() 
+        spacing = self.custom_drone_spacing_var.get()
+        total_pixels = rows * cols
+        
+        # メイン表示更新
+        self.screen_display_label.config(text=f"LEDスクリーン: {rows}行 × {cols}列")
+        self.total_pixels_label.config(text=f"総ピクセル数: {total_pixels:,}個 | ドローン間隔: {spacing}m")
+        
+        # 実サイズ計算
+        width_m = (cols - 1) * spacing
+        height_m = (rows - 1) * spacing
+        area_m2 = width_m * height_m
+        
+        # 右パネルのタイトル更新
+        if hasattr(self, 'right_frame'):
+            self.right_frame.config(text=f"LEDスクリーン ({rows}行×{cols}列) - {total_pixels:,}ピクセル")
+    
+    def add_row_top(self):
+        """上に1行追加 - テキストを下にシフトして上に空白行を追加"""
+        current = self.custom_rows_var.get()
+        self.custom_rows_var.set(current + 1)
+        # テキストを1行分下にシフト
+        self.y_offset_adjustment += 1
+        print(f"上に1行追加: {current} → {current + 1} (y_offset: {self.y_offset_adjustment})")
+        self.status_var.set(f"上に1行追加: {current + 1}行 (テキスト下シフト)")
+        self.update_preview_if_exists()
+    
+    def add_row_bottom(self):
+        """下に1行追加 - 下に空白行を追加（テキスト位置は変わらない）"""
+        current = self.custom_rows_var.get()
+        self.custom_rows_var.set(current + 1)
+        # y_offset_adjustmentは変更しない（テキスト位置維持）
+        print(f"下に1行追加: {current} → {current + 1} (y_offset: {self.y_offset_adjustment})")
+        self.status_var.set(f"下に1行追加: {current + 1}行 (テキスト位置維持)")
+        self.update_preview_if_exists()
+    
+    def remove_row_top(self):
+        """上から1行削除 - テキストを上にシフト"""
+        current = self.custom_rows_var.get()
+        if current > 1:
+            self.custom_rows_var.set(current - 1)
+            # テキストを1行分上にシフト（ただし負の値にはならない）
+            self.y_offset_adjustment = max(0, self.y_offset_adjustment - 1)
+            print(f"上から1行削除: {current} → {current - 1} (y_offset: {self.y_offset_adjustment})")
+            self.status_var.set(f"上から1行削除: {current - 1}行 (テキスト上シフト)")
+            self.update_preview_if_exists()
+    
+    def remove_row_bottom(self):
+        """下から1行削除 - 下の空白行を削除（テキスト位置は変わらない）"""
+        current = self.custom_rows_var.get()
+        if current > 1:
+            self.custom_rows_var.set(current - 1)
+            # y_offset_adjustmentは変更しない（テキスト位置維持）
+            print(f"下から1行削除: {current} → {current - 1} (y_offset: {self.y_offset_adjustment})")
+            self.status_var.set(f"下から1行削除: {current - 1}行 (テキスト位置維持)")
+            self.update_preview_if_exists()
+    
+    def update_preview_if_exists(self):
+        """現在のLEDデータが存在する場合、プレビューを更新"""
+        if hasattr(self, 'current_led_data') and self.current_led_data:
+            self.update_preview_canvas(self.current_led_data)
+    
+    def add_col_left(self):
+        """左に1列追加 - 左側に空白列を追加（テキストを右にシフト）"""
+        if hasattr(self, 'button_operation_lock') and self.button_operation_lock:
+            print("左に1列追加: 操作ロック中、無視")
+            return
+        
+        current = self.custom_cols_var.get()
+        
+        # テキスト幅を取得（現在のLEDデータがある場合）
+        if hasattr(self, 'current_led_data') and self.current_led_data:
+            text_width = self.current_led_data['width']
+            # 現在の中心位置を記録
+            old_center = (current - text_width) // 2
+            # 列数を増やす
+            self.custom_cols_var.set(current + 1)
+            # 新しい中心位置を計算
+            new_center = (current + 1 - text_width) // 2
+            # テキストを右にシフト（左に空白を作る）
+            # x_offsetは常に1増やすが、center_calcの変化も考慮
+            self.x_offset_adjustment += 1 + (old_center - new_center)
+        else:
+            # LEDデータがない場合は単純に処理
+            self.custom_cols_var.set(current + 1)
+            self.x_offset_adjustment += 1
+        
+        print(f"左に1列追加: {current} → {current + 1} (x_offset: {self.x_offset_adjustment})")
+        self.status_var.set(f"左に1列追加: {current + 1}列 (左側に空白追加)")
+        self.update_preview_if_exists()
+    
+    def add_col_right(self):
+        """右に1列追加 - 右側に空白列を追加（テキスト位置は維持）"""
+        if hasattr(self, 'button_operation_lock') and self.button_operation_lock:
+            print("右に1列追加: 操作ロック中、無視")
+            return
+        
+        current = self.custom_cols_var.get()
+        
+        # テキスト幅を取得（現在のLEDデータがある場合）
+        if hasattr(self, 'current_led_data') and self.current_led_data:
+            text_width = self.current_led_data['width']
+            # 現在の中心位置を記録
+            old_center = (current - text_width) // 2
+            # 列数を増やす
+            self.custom_cols_var.set(current + 1)
+            # 新しい中心位置を計算
+            new_center = (current + 1 - text_width) // 2
+            # テキスト位置を維持するためx_offsetを調整
+            self.x_offset_adjustment += (old_center - new_center)
+        else:
+            # LEDデータがない場合は単純に列数を増やす
+            self.custom_cols_var.set(current + 1)
+        
+        print(f"右に1列追加: {current} → {current + 1} (x_offset: {self.x_offset_adjustment})")
+        self.status_var.set(f"右に1列追加: {current + 1}列 (右側に空白追加)")
+        self.update_preview_if_exists()
+    
+    def remove_col_left(self):
+        """左から1列削除 - 左側の空白を削除（左に追加の逆操作）"""
+        current = self.custom_cols_var.get()
+        if current > 1:
+            # テキスト幅を取得（現在のLEDデータがある場合）
+            if hasattr(self, 'current_led_data') and self.current_led_data:
+                text_width = self.current_led_data['width']
+                # 現在の中心位置を記録
+                old_center = (current - text_width) // 2
+                # 列数を減らす
+                self.custom_cols_var.set(current - 1)
+                # 新しい中心位置を計算
+                new_center = (current - 1 - text_width) // 2
+                # テキストを左にシフト（中心位置の変化を考慮）
+                # x_offsetは常に1減らすが、center_calcの変化も考慮
+                self.x_offset_adjustment = max(0, self.x_offset_adjustment - 1 + (old_center - new_center))
+            else:
+                # LEDデータがない場合は単純に処理
+                self.custom_cols_var.set(current - 1)
+                self.x_offset_adjustment = max(0, self.x_offset_adjustment - 1)
+            
+            print(f"左から1列削除: {current} → {current - 1} (x_offset: {self.x_offset_adjustment})")
+            self.status_var.set(f"左から1列削除: {current - 1}列 (左側から削除)")
+            self.update_preview_if_exists()
+    
+    def remove_col_right(self):
+        """右から1列削除 - 右側の空白を削除（テキスト位置は維持）"""
+        current = self.custom_cols_var.get()
+        if current > 1:
+            # テキスト幅を取得（現在のLEDデータがある場合）
+            if hasattr(self, 'current_led_data') and self.current_led_data:
+                text_width = self.current_led_data['width']
+                # 現在の中心位置を記録
+                old_center = (current - text_width) // 2
+                # 列数を減らす
+                self.custom_cols_var.set(current - 1)
+                # 新しい中心位置を計算
+                new_center = (current - 1 - text_width) // 2
+                # テキスト位置を維持するためx_offsetを調整
+                self.x_offset_adjustment += (old_center - new_center)
+            else:
+                # LEDデータがない場合は単純に列数を減らす
+                self.custom_cols_var.set(current - 1)
+            
+            print(f"右から1列削除: {current} → {current - 1} (x_offset: {self.x_offset_adjustment})")
+            self.status_var.set(f"右から1列削除: {current - 1}列 (右側から削除)")
+            self.update_preview_if_exists()
+        
     def apply_custom_settings(self):
         """カスタム設定を適用"""
+        rows = self.custom_rows_var.get()
+        cols = self.custom_cols_var.get()
+        spacing = self.custom_drone_spacing_var.get()
+        
         # カスタム設定を更新
         self.screen_configs["カスタム"] = {
-            "rows": self.custom_rows_var.get(),
-            "cols": self.custom_cols_var.get(),
+            "rows": rows,
+            "cols": cols,
             "spacing": 30,  # GUI表示用のピクセル間隔は固定
-            "drone_spacing_m": self.custom_drone_spacing_var.get()  # メートル単位
+            "drone_spacing_m": spacing  # メートル単位
         }
         
         # カスタムを選択
         self.screen_size_var.set("カスタム")
         self.update_screen_size()
         
-        self.status_var.set(f"カスタム設定適用: {self.custom_rows_var.get()}×{self.custom_cols_var.get()}, 間隔{self.custom_drone_spacing_var.get()}m")
+        # 表示情報更新
+        self.update_screen_display()
+        
+        total_pixels = rows * cols
+        self.status_var.set(f"カスタム設定適用: {rows}×{cols}列 ({total_pixels:,}ピクセル), 間隔{spacing}m")
         
     def update_font_size(self):
         """フォントサイズを更新"""
@@ -1171,8 +1193,9 @@ def main(frame, time_fraction, drone_index, formation_index, position, drone_cou
             
             # LEDピクセル（選択されたグリッド）
             led_data = frame["led_data"]
-            x_offset = (config["cols"] - led_data["width"]) // 2  # 水平方向のセンタリング
-            y_offset = (config["rows"] - led_data["height"]) // 2  # 垂直方向のセンタリング
+            x_offset = (config["cols"] - led_data["width"]) // 2 + self.x_offset_adjustment  # 水平方向のセンタリング + x_offset調整
+            # 行数が足りない場合は下が切れるように、上から配置 + y_offset調整を適用
+            y_offset = 0 + self.y_offset_adjustment
             
             color_rgb = tuple(int(c * 255) for c in frame["color"])
             
@@ -1223,8 +1246,9 @@ def main(frame, time_fraction, drone_index, formation_index, position, drone_cou
         pixels_data = []
         for frame in self.frames:
             led_data = frame["led_data"]
-            x_offset = (config["cols"] - led_data["width"]) // 2  # 水平方向のセンタリング
-            y_offset = (config["rows"] - led_data["height"]) // 2  # 垂直方向のセンタリング
+            x_offset = (config["cols"] - led_data["width"]) // 2 + self.x_offset_adjustment  # 水平方向のセンタリング + x_offset調整
+            # 行数が足りない場合は下が切れるように、上から配置 + y_offset調整を適用
+            y_offset = 0 + self.y_offset_adjustment
             
             for x, y in led_data["pixels"]:
                 adjusted_x = x + x_offset
@@ -1461,7 +1485,13 @@ Font2LED Toolの設定とBlenderの実際のドローン配置が一致してい
     
     def update_preview_canvas(self, led_data, time_fraction=0.0):
         """プレビューキャンバスを更新（アニメーション対応）"""
-        config = self.screen_configs[self.screen_size_var.get()]
+        # 実際のカスタム設定値を使用
+        config = {
+            "rows": self.custom_rows_var.get(),
+            "cols": self.custom_cols_var.get(),
+            "spacing": 30,  # プレビュー表示用の固定値
+            "drone_spacing_m": self.custom_drone_spacing_var.get()
+        }
         
         # ズーム対応のスペーシング計算
         spacing = int(config["spacing"] * self.zoom_scale)
@@ -1496,9 +1526,10 @@ Font2LED Toolの設定とBlenderの実際のドローン配置が一致してい
         else:
             animated_pixels = led_data["pixels"]
         
-        # 中央配置のオフセット計算
-        x_offset = (config["cols"] - led_data["width"]) // 2
-        y_offset = (config["rows"] - led_data["height"]) // 2
+        # 中央配置のオフセット計算 + x_offset/y_offset調整を適用
+        x_offset = (config["cols"] - led_data["width"]) // 2 + self.x_offset_adjustment
+        # 行数が足りない場合は下が切れるように、上から配置 + y_offset調整を適用
+        y_offset = 0 + self.y_offset_adjustment
         
         # RGB(0.0-1.0)から16進数カラーコードに変換
         color = self.current_color
